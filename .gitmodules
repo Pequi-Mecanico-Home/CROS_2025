@@ -1,8 +1,8 @@
 [submodule "modules/miss_mic"]
 	path = modules/miss_mic
-	url = https://github.com/Pequi-Mecanico-Home/miss_mic.git
+	url = git@github.com/Pequi-Mecanico-Home/miss_mic.git
 	branch = CROS_2025
 [submodule "modules/miss_wakeword"]
 	path = modules/miss_wakeword
-	url = https://github.com/Pequi-Mecanico-Home/miss_wakeword.git
+	url = git@github.com/Pequi-Mecanico-Home/miss_wakeword.git
 	branch = openwakeword
