@@ -1,0 +1,18 @@
+version: '3.3'
+
+services:
+  hri:
+    container_name: miss_wakeword
+    image: miss_wakeword:latest
+    runtime: nvidia
+    tty: true
+    privileged: true
+    network_mode: "host"
+    volumes:
+      - /dev/snd:/dev/snd
+      - ../modules:/workspace/src
+      - ../utils/ros2_entrypoint.sh:/opt/ros2_entrypoint.sh
+    devices:
+      - /dev/bus/usb
+      - /dev/snd
+    command: ["/bin/bash", "-c", "source /opt/ros2_entrypoint.sh && exec bash"]
