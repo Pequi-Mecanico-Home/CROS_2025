@@ -1,4 +1,14 @@
-# CROS_2025
+# A Simplified Pipeline for Wakeword Creation and Deployment: Leveraging Zero-Shot Text-to-Speech and ROS2 for Robotic Systems
+
+
+---
+## Synthetic Data generation:
+To be announced
+
+## Training :
+To be announced
+
+## Deployment
 
 Clone the repository  
 ```bash
@@ -32,12 +42,3 @@ Run wake word Node:
 ```bash
 ros2 run miss_wakeword inference
 ```
-
----
-
-# Training :
-To be announced
-
-# Synthetic Data generation:
-To be announced
-
