@@ -1,0 +1,6 @@
+csv_file: 'selected_audios_cml.csv'
+output_folder: 'output_folder'
+n_samples_positive: 1000
+n_samples_negative: 100
+keyword: 'keyword'
+random: True
