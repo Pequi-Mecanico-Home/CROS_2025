@@ -23,14 +23,14 @@ docker run -it --gpus all --ipc host -v /home/seu/diretório:/workspace_cros2025
 Inside the container, install the dependencies:
 
 ```bash
-pip install -r requirements.txt
+pip install -r data_downloads/requirements.txt
 ```
 Download the necessary resources:
 
 ```bash
-python3 download_mit_rirs.py
-python3 download_noise_and_fma_audio.py
-./setup_openwakeword_resources.sh
+python3 data_downloads/download_mit_rirs.py
+python3 data_downloads/download_noise_and_fma_audio.py
+./data_downloads/setup_openwakeword_resources.sh
 ```
 
 
@@ -75,13 +75,13 @@ random: True                                 # Generate random samples
 To generate positive audio samples:
 
 ```bash
-python infer_dataset.py --config config.yaml
+python inference/infer_dataset.py --config configs/config.yaml
 ```
 
 To generate negative audio samples:
 
 ```bash
-python infer_dataset_negative.py --config config.yaml
+python inference/infer_dataset_negative.py --config configs/config.yaml
 ```
 
 The files will be saved in the folders defined in config.yaml, with a metadata.csv file in each folder containing sample details.
@@ -100,7 +100,7 @@ The files will be saved in the folders defined in config.yaml, with a metadata.c
 To apply augmentation:
 
 ```bash
-python3 train.py --training_config my_model.yml --augment_clips --overwrite 
+python3 train.py --training_config configs/my_model.yml --augment_clips --overwrite 
 ```
 
 ### Training
@@ -108,5 +108,5 @@ python3 train.py --training_config my_model.yml --augment_clips --overwrite
 To start training:
 
 ```bash
-python3 train.py --training_config my_model.yml --train_model 
+python3 train.py --training_config configs/my_model.yml --train_model 
 ```
