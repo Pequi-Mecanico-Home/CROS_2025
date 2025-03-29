@@ -650,13 +650,7 @@ if __name__ == '__main__':
         type=str,
         required=True
     )
-    parser.add_argument(
-        "--generate_clips",
-        help="Execute the synthetic data generation process",
-        action="store_true",
-        default="False",
-        required=False
-    )
+
     parser.add_argument(
         "--augment_clips",
         help="Execute the synthetic data augmentation process",
@@ -681,10 +675,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     config = yaml.load(open(args.training_config, 'r').read(), yaml.Loader)
-
-    # imports Piper for synthetic sample generation
-#     # sys.path.insert(0, os.path.abspath(config["piper_sample_generator_path"]))
-#     # from piper_sample_generator.generate_samples import generate_samples
 
     # Define output locations
     config["output_dir"] = os.path.abspath(config["output_dir"])
@@ -718,124 +708,39 @@ if __name__ == '__main__':
     target_sample_rate = 16000
 
     # Verificar e resamplear os arquivos de áudio, se necessário
-    for clip in positive_clips_train:
+    for clip in positive_clips_train + positive_clips_test + negative_clips_train + negative_clips_test:
         Model.resample_if_needed(clip, target_sample_rate)
-    
-    for clip in positive_clips_test:
-        Model.resample_if_needed(clip, target_sample_rate)
-
-    for clip in negative_clips_train:
-        Model.resample_if_needed(clip, target_sample_rate)
-
-    for clip in negative_clips_test:
-        Model.resample_if_needed(clip, target_sample_rate)
-
 
     # Get paths for impulse response and background audio files
     rir_paths = [i.path for j in config["rir_paths"] for i in os.scandir(j) if i.name.endswith(".wav")]
+
     # Filtrar apenas arquivos .wav em background_paths
-background_paths = []
-if len(config["background_paths_duplication_rate"]) != len(config["background_paths"]):
-    config["background_paths_duplication_rate"] = [1] * len(config["background_paths"])
-for background_path, duplication_rate in zip(config["background_paths"], config["background_paths_duplication_rate"]):
-    background_paths.extend([i.path for i in os.scandir(background_path) if i.name.endswith(".wav")] * duplication_rate)
+    background_paths = []
+    if len(config["background_paths_duplication_rate"]) != len(config["background_paths"]):
+        config["background_paths_duplication_rate"] = [1] * len(config["background_paths"])
+    for background_path, duplication_rate in zip(config["background_paths"], config["background_paths_duplication_rate"]):
+        background_paths.extend([i.path for i in os.scandir(background_path) if i.name.endswith(".wav")] * duplication_rate)
+    
+    
     # Resample audio files in rir_paths and background_paths if needed
-    for clip in rir_paths:
+    for clip in rir_paths + background_paths:
         Model.resample_if_needed(clip, target_sample_rate)
 
-    for clip in background_paths:
-        Model.resample_if_needed(clip, target_sample_rate)
-
-    if args.generate_clips is True:
-        # Generate positive clips for training
-        logging.info("#"*50 + "\nGenerating positive clips for training\n" + "#"*50)
-        if not os.path.exists(positive_train_output_dir):
-            os.mkdir(positive_train_output_dir)
-        n_current_samples = len(os.listdir(positive_train_output_dir))
-        if n_current_samples <= 0.95*config["n_samples"]:
-            generate_samples(
-                text=config["target_phrase"], max_samples=config["n_samples"]-n_current_samples,
-                batch_size=config["tts_batch_size"],
-                noise_scales=[0.98], noise_scale_ws=[0.98], length_scales=[0.75, 1.0, 1.25],
-                output_dir=positive_train_output_dir, auto_reduce_batch_size=True,
-                file_names=[uuid.uuid4().hex + ".wav" for i in range(config["n_samples"])]
-            )
-            torch.cuda.empty_cache()
-        else:
-            logging.warning(f"Skipping generation of positive clips for training, as ~{config['n_samples']} already exist")
-
-        # Generate positive clips for testing
-        logging.info("#"*50 + "\nGenerating positive clips for testing\n" + "#"*50)
-        if not os.path.exists(positive_test_output_dir):
-            os.mkdir(positive_test_output_dir)
-        n_current_samples = len(os.listdir(positive_test_output_dir))
-        if n_current_samples <= 0.95*config["n_samples_val"]:
-            generate_samples(text=config["target_phrase"], max_samples=config["n_samples_val"]-n_current_samples,
-                             batch_size=config["tts_batch_size"],
-                             noise_scales=[1.0], noise_scale_ws=[1.0], length_scales=[0.75, 1.0, 1.25],
-                             output_dir=positive_test_output_dir, auto_reduce_batch_size=True)
-            torch.cuda.empty_cache()
-        else:
-            logging.warning(f"Skipping generation of positive clips testing, as ~{config['n_samples_val']} already exist")
-
-        # Generate adversarial negative clips for training
-        logging.info("#"*50 + "\nGenerating negative clips for training\n" + "#"*50)
-        if not os.path.exists(negative_train_output_dir):
-            os.mkdir(negative_train_output_dir)
-        n_current_samples = len(os.listdir(negative_train_output_dir))
-        if n_current_samples <= 0.95*config["n_samples"]:
-            adversarial_texts = config["custom_negative_phrases"]
-            for target_phrase in config["target_phrase"]:
-                adversarial_texts.extend(generate_adversarial_texts(
-                    input_text=target_phrase,
-                    N=config["n_samples"]//len(config["target_phrase"]),
-                    include_partial_phrase=1.0,
-                    include_input_words=0.2))
-            generate_samples(text=adversarial_texts, max_samples=config["n_samples"]-n_current_samples,
-                             batch_size=config["tts_batch_size"]//7,
-                             noise_scales=[0.98], noise_scale_ws=[0.98], length_scales=[0.75, 1.0, 1.25],
-                             output_dir=negative_train_output_dir, auto_reduce_batch_size=True,
-                             file_names=[uuid.uuid4().hex + ".wav" for i in range(config["n_samples"])]
-                             )
-            torch.cuda.empty_cache()
-        else:
-            logging.warning(f"Skipping generation of negative clips for training, as ~{config['n_samples']} already exist")
-
-        # Generate adversarial negative clips for testing
-        logging.info("#"*50 + "\nGenerating negative clips for testing\n" + "#"*50)
-        if not os.path.exists(negative_test_output_dir):
-            os.mkdir(negative_test_output_dir)
-        n_current_samples = len(os.listdir(negative_test_output_dir))
-        if n_current_samples <= 0.95*config["n_samples_val"]:
-            adversarial_texts = config["custom_negative_phrases"]
-            for target_phrase in config["target_phrase"]:
-                adversarial_texts.extend(generate_adversarial_texts (
-                    input_text=target_phrase,
-                    N=config["n_samples_val"]//len(config["target_phrase"]),
-                    include_partial_phrase=1.0,
-                    include_input_words=0.2))
-            generate_samples(text=adversarial_texts, max_samples=config["n_samples_val"]-n_current_samples,
-                             batch_size=config["tts_batch_size"]//7,
-                             noise_scales=[1.0], noise_scale_ws=[1.0], length_scales=[0.75, 1.0, 1.25],
-                             output_dir=negative_test_output_dir, auto_reduce_batch_size=True)
-            torch.cuda.empty_cache()
-        else:
-            logging.warning(f"Skipping generation of negative clips for testing, as ~{config['n_samples_val']} already exist")
 
     # Set the total length of the training clips based on the ~median generated clip duration, rounding to the nearest 1000 samples
     # and setting to 32000 when the median + 750 ms is close to that, as it's a good default value
-    n = 50  # sample size
-    positive_clips = [str(i) for i in Path(positive_test_output_dir).glob("*.wav")]
-    duration_in_samples = []
-    for i in range(n):
-        sr, dat = scipy.io.wavfile.read(positive_clips[np.random.randint(0, len(positive_clips))])
-        duration_in_samples.append(len(dat))
+        n = 50  # sample size
+        positive_clips = [str(i) for i in Path(positive_test_output_dir).glob("*.wav")]
+        duration_in_samples = []
+        for i in range(n):
+            sr, dat = scipy.io.wavfile.read(positive_clips[np.random.randint(0, len(positive_clips))])
+            duration_in_samples.append(len(dat))
 
-    config["total_length"] = int(round(np.median(duration_in_samples)/1000)*1000) + 12000  # add 750 ms to clip duration as buffer
-    if config["total_length"] < 32000:
-        config["total_length"] = 32000  # set a minimum of 32000 samples (2 seconds)
-    elif abs(config["total_length"] - 32000) <= 4000:
-        config["total_length"] = 32000
+        config["total_length"] = int(round(np.median(duration_in_samples)/1000)*1000) + 12000  # add 750 ms to clip duration as buffer
+        if config["total_length"] < 32000:
+            config["total_length"] = 32000  # set a minimum of 32000 samples (2 seconds)
+        elif abs(config["total_length"] - 32000) <= 4000:
+            config["total_length"] = 32000
 
     # Do Data Augmentation
     if args.augment_clips is True:

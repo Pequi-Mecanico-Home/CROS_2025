@@ -8,27 +8,9 @@ model_name: "Hey_miss"
 target_phrase:
   - "Hey miss"
 
-
-# Specific phrases that you do *not* want the model to activate on, outside of those generated automatically via phoneme overlap
-# This can be a good way to reduce false positives if you notice that, in practice, certain words or phrases are problematic
-custom_negative_phrases: []
-
-# The total number of positive samples to generate for training (minimum of 20,000 recommended, often 100,000+ is best)
-n_samples: 20000
-
-# The total number of positive samples to generate for validation and early stopping of model training
-# n_samples // 10 is a good rule of thumb for this value
-n_samples_val: 4000
-
-# The batch size to use with Piper TTS when generating synthetic training data
-tts_batch_size: 50
-
 # The batch size to use when performing data augmentation on generated clips prior to training
 # It's recommended that this not be too large to ensure that there is enough variety in the augmentation
 augmentation_batch_size: 16
-
-# The path to a fork of the piper-sample-generator repository for TTS (https://github.com/dscripka/piper-sample-generator)
-piper_sample_generator_path: "./piper-sample-generator"
 
 # The output directory for the generated synthetic clips, openwakeword features, and trained models
 # Sub-directories will be automatically created for train and test clips for both positive and negative examples
