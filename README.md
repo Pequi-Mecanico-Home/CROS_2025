@@ -4,28 +4,11 @@ This project trains a wake word model ("Hey Miss") using text-to-speech (TTS) sy
 
 ## Prerequisites
 
-### Docker 
-
-Download the Docker image:
-
-```bash
-docker pull alexandreacff/tts:xtts
-```
-
-Start the container (replace /home/your/directory with the correct path):
-
-```
-docker run -it --gpus all --ipc host -v /home/seu/diretório:/workspace_cros2025  alexandreacff/tts:xtts bash 
-```
-
 ### Installing Dependencies
 
-Inside the container, install the dependencies:
+In the workspace 
 
-```bash
-pip install -r data_downloads/requirements.txt
-```
-Download the necessary resources:
+Download the necessary resources, or use the resources of your choice:
 
 ```bash
 python3 data_downloads/download_mit_rirs.py
@@ -33,6 +16,29 @@ python3 data_downloads/download_noise_and_fma_audio.py
 ./data_downloads/setup_openwakeword_resources.sh
 ```
 
+## Additional Dependencies
+
+Clone or download the following repositories:
+
+```bash
+git clone https://github.com/coqui-ai/TTS.git
+git clone https://huggingface.co/coqui/XTTS-v2
+wget https://www.openslr.org/resources/146/cml_tts_dataset_portuguese_v0.1.tar.bz
+```
+
+### Docker 
+
+Download the Docker image:
+
+```bash
+docker pull gpettro/cros2025:xtts
+```
+
+Start the container (replace /home/your/directory with the correct path):
+
+```
+docker run -it --gpus all --ipc host -v /home/seu/diretório:/workspace_cros2025  gpettro/cros2025:xtts bash 
+```
 
 ## Generating Audio Samples
 
@@ -46,16 +52,6 @@ The project generates positive and negative samples using a TTS model. The gener
 - selected_audios_cml.csv: CSV file containing audio paths and speaker IDs.
 - utils/: Directory containing utilities for adversarial text generation.
 - XTTS-v2/: Directory containing the text-to-speech synthesis model.
-
-## Additional Dependencies
-
-Clone or download the following repositories if needed:
-
-```bash
-git clone https://github.com/coqui-ai/TTS.git
-git clone https://huggingface.co/coqui/XTTS-v2
-wget https://www.openslr.org/resources/146/cml_tts_dataset_portuguese_v0.1.tar.bz
-```
 
 ## Configuration (config.yaml)
 
@@ -75,13 +71,13 @@ random: True                                 # Generate random samples
 To generate positive audio samples:
 
 ```bash
-python inference/infer_dataset.py --config configs/config.yaml
+python3 inference/infer_dataset.py --config configs/config.yaml
 ```
 
 To generate negative audio samples:
 
 ```bash
-python inference/infer_dataset_negative.py --config configs/config.yaml
+python3 inference/infer_dataset_negative.py --config configs/config.yaml
 ```
 
 The files will be saved in the folders defined in config.yaml, with a metadata.csv file in each folder containing sample details.
@@ -100,7 +96,7 @@ The files will be saved in the folders defined in config.yaml, with a metadata.c
 To apply augmentation:
 
 ```bash
-python3 train.py --training_config configs/my_model.yml --augment_clips --overwrite 
+python3 augment.py --training_config configs/my_model.yml --overwrite 
 ```
 
 ### Training
@@ -108,5 +104,5 @@ python3 train.py --training_config configs/my_model.yml --augment_clips --overwr
 To start training:
 
 ```bash
-python3 train.py --training_config configs/my_model.yml --train_model 
+python3 train.py --training_config configs/my_model.yml 
 ```
