@@ -7,7 +7,6 @@ torch_audiomentations
 speechbrain
 acoustics
 piper-phonemize
-webrtcvad
 librosa
 soundfile
 onnx_tf
