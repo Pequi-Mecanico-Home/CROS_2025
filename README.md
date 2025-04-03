@@ -26,7 +26,7 @@ git clone https://huggingface.co/coqui/XTTS-v2
 wget https://www.openslr.org/resources/146/cml_tts_dataset_portuguese_v0.1.tar.bz
 ```
 
-### Docker 
+## Docker 
 
 Download the Docker image:
 
