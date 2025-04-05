@@ -13,7 +13,7 @@ import sys
 import yaml
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from utils.adversarial_text import gerar_palavra_aleatoria, gerar_amostras_negativas
+from utils_infer.adversarial_text import gerar_palavra_aleatoria, gerar_amostras_negativas
 
 # Ensure output files are saved in the current directory
 current_directory = os.path.dirname(os.path.abspath(__file__))
