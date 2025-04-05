@@ -1,0 +1,48 @@
+FROM pytorch/pytorch:2.2.0-cuda12.1-cudnn8-runtime
+
+WORKDIR /workspace
+
+# System dependencies
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    git \
+    wget \
+    unzip \
+    libsndfile1 \
+    ffmpeg \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create directory for models
+RUN mkdir -p /opt/conda/lib/python3.10/site-packages/openwakeword/resources/models/
+
+# Download models (corrigido para evitar duplicação)
+RUN wget https://github.com/dscripka/openWakeWord/releases/download/v0.5.1/melspectrogram.onnx -O /opt/conda/lib/python3.10/site-packages/openwakeword/resources/models/melspectrogram.onnx && \
+    wget https://github.com/dscripka/openWakeWord/releases/download/v0.5.1/embedding_model.onnx -O /opt/conda/lib/python3.10/site-packages/openwakeword/resources/models/embedding_model.onnx
+
+# Upgrade pip tools
+RUN pip install --upgrade pip setuptools wheel
+
+# Copy requirements.txt first for better caching
+COPY ./data_downloads/requirements.txt /workspace/requirements.txt
+
+# Install main dependencies
+RUN pip install -r /workspace/requirements.txt
+
+# Copy TTS project files
+COPY ./TTS /workspace/TTS
+
+# Install TTS in editable mode
+WORKDIR /workspace/TTS
+RUN pip install -e .[all,dev,notebooks]
+
+# Install additional Python packages
+RUN pip install --no-cache-dir \
+    openwakeword==0.6.0 \
+    TTS \
+    transformers==4.33 \
+    spacy[ja] \
+    gradio==4.44.1
+
+WORKDIR /workspace
+
+CMD ["bash"]
