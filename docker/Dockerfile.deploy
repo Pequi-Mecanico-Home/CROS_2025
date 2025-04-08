@@ -20,11 +20,4 @@ RUN pip3 install \
     pyaudio \
     sounddevice
 
-# why god why god do i gotta suffer
-# WORKDIR /workspace/miss_mic
-# RUN colcon build --symlink-install && \
-#     bash -c "source install/setup.bash"
-
-# WORKDIR /workspace/miss_wakeword
-# RUN colcon build --symlink-install && \
-#     bash -c "source install/setup.bash"
+RUN colcon build --symlink-install 
