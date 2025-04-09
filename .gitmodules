@@ -1,8 +1,8 @@
-[submodule "deployment/modules/miss_mic"]
-	path = deployment/modules/miss_mic
+[submodule "modules/miss_mic"]
+	path = modules/miss_mic
 	url = git@github.com:Pequi-Mecanico-Home/miss_mic.git
 	branch = CROS_2025
-[submodule "deployment/modules/miss_wakeword"]
-	path = deployment/modules/miss_wakeword
+[submodule "modules/miss_wakeword"]
+	path = modules/miss_wakeword
 	url = git@github.com:Pequi-Mecanico-Home/miss_wakeword.git
 	branch = openwakeword
