@@ -19,5 +19,3 @@ RUN pip3 install \
     openwakeword==0.5 \
     pyaudio \
     sounddevice
-
-RUN colcon build --symlink-install 
